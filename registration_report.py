@@ -4,12 +4,15 @@ import polars as pl
 
 WOOCOMMERCE_PATH = "in/orders-2024-05-29-19-57-22.csv"
 WPFORMS_PATH = "in/wpforms-3032-Artist-Registration-2024-05-29-20-00-19.xlsx"
-YEAR = 2024
-WEEK = 22
+# Note: Start Date and End Date are inclusive.
+START_DATE = "2024-05-22"
+END_DATE = "2024-05-28"
 
 
-def filter_woocommerce(woocommerce, year, week):
+def filter_woocommerce(woocommerce, start_date, end_date):
     """Sets columns in WooCommerce report and filters for selected week."""
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
     return (
         woocommerce.select(
             pl.col("Order Date").alias("Date"),
@@ -24,12 +27,14 @@ def filter_woocommerce(woocommerce, year, week):
             pl.col("Date").str.to_datetime("%Y-%m-%d %H:%M"),
             pl.col("email").str.to_lowercase(),
         )
-        .filter((pl.col("Date").dt.year() == year) & (pl.col("Date").dt.week() == week))
+        .filter(pl.col("Date").is_between(start, end))
     )
 
 
-def filter_wpforms(wpforms, year, week):
+def filter_wpforms(wpforms, start_date, end_date):
     """Sets columns in WPForms report and filters for selected week."""
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
     return (
         wpforms.select(
             pl.col("Entry Date").str.to_datetime("%B %d, %Y %I:%M %p").alias("date"),
@@ -55,8 +60,7 @@ def filter_wpforms(wpforms, year, week):
         .with_columns(pl.col("email").str.to_lowercase())
         .filter(
             (~pl.col("email").str.split("@").list.first().is_in(["ss", "cr", "xx"]))
-            & (pl.col("date").dt.year() == year)
-            & (pl.col("date").dt.week() == week)
+            & (pl.col("date").is_between(start, end))
         )
     )
 
@@ -91,30 +95,22 @@ def merge_reports(woocommerce, wpforms):
     )
 
 
-def generate_report(woocommerce_path, wpforms_path, year, week):
+def generate_report(woocommerce_path, wpforms_path, start_date, end_date):
     "Generates Registration Report."
-    week_start = datetime.fromisocalendar(year=year, week=week, day=1).strftime(
-        "%Y-%m-%d"
-    )
-    week_end = datetime.fromisocalendar(year=year, week=week, day=7).strftime(
-        "%Y-%m-%d"
-    )
 
     woocommerce = pl.read_csv(woocommerce_path)
     wpforms = pl.read_excel(wpforms_path)
 
-    filtered_woocommerce = filter_woocommerce(woocommerce, year, week)
-    filtered_wpforms = filter_wpforms(wpforms, year, week)
+    filtered_woocommerce = filter_woocommerce(woocommerce, start_date, end_date)
+    filtered_wpforms = filter_wpforms(wpforms, start_date, end_date)
 
     report = merge_reports(filtered_woocommerce, filtered_wpforms)
 
-    target_filename = (
-        f"./out/{year} - JPOS Registration Report {week_start} to {week_end}.xlsx"
-    )
+    target_filename = f"./out/{end_date[:4]} - JPOS Registration Report {start_date[-5:]} to {end_date[-5:]}.xlsx"
 
     report.write_excel(
         workbook=target_filename,
-        worksheet="Registrations {year}-W{week}",
+        worksheet=f"Registrations {start_date[-5:]} to {end_date[-5:]}",
         table_style="Table Style Medium 2",
     )
 
@@ -122,4 +118,4 @@ def generate_report(woocommerce_path, wpforms_path, year, week):
 
 
 if __name__ == "__main__":
-    generate_report(WOOCOMMERCE_PATH, WPFORMS_PATH, YEAR, WEEK)
+    generate_report(WOOCOMMERCE_PATH, WPFORMS_PATH, START_DATE, END_DATE)
