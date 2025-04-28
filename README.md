@@ -9,8 +9,8 @@ Reports for JP Open Studios.
 ```
 WOOCOMMERCE_PATH = "" # location of Woocommerce export, must be .csv
 WPFORMS_PATH = ""     # location of WPForms export, must be .xlsx
-YEAR = 2024           # year of report to generate
-WEEK = 21             # ISO week of report to generate
+START_DATE = ""       # the beginning date of the date range in YYYY-MM-DD format
+END_DATE = ""         # the last date of the date range in YYYY-MM-DD format
 ```
 
 3. Run the following commands:

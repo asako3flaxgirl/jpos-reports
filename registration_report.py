@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import polars as pl
 
@@ -10,9 +10,9 @@ END_DATE = "2024-05-28"
 
 
 def filter_woocommerce(woocommerce, start_date, end_date):
-    """Sets columns in WooCommerce report and filters for selected week."""
+    """Sets columns in WooCommerce report and filters for selected date range."""
     start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = datetime.strptime(end_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
     return (
         woocommerce.select(
             pl.col("Order Date").alias("Date"),
