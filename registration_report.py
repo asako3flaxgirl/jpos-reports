@@ -32,9 +32,9 @@ def filter_woocommerce(woocommerce, start_date, end_date):
 
 
 def filter_wpforms(wpforms, start_date, end_date):
-    """Sets columns in WPForms report and filters for selected week."""
+    """Sets columns in WPForms report and filters for selected date range."""
     start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = datetime.strptime(end_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
     return (
         wpforms.select(
             pl.col("Entry Date").str.to_datetime("%B %d, %Y %I:%M %p").alias("date"),
@@ -43,6 +43,8 @@ def filter_wpforms(wpforms, start_date, end_date):
             pl.col("City").alias("city"),
             pl.col("State").alias("state"),
             pl.col("Zip").alias("zip"),
+            pl.col("JP Business/Studio Name").alias("JP Studio Name"),
+            pl.col("JP Business/Studio Address").alias("JP Studio Address"),
             pl.col("Website Url").alias("website"),
             pl.col("Phone Number").alias("Phone"),
             pl.col("Name as it will appear in your map listing").alias("Name for Map"),
@@ -88,6 +90,8 @@ def merge_reports(woocommerce, wpforms):
             "Show space/location",
             "Name of Business",
             "Studio/Business Address",
+            "JP Studio Name",
+            "JP Studio Address",
         )
         .sort("Date", nulls_last=True)
         .unique(subset="email", keep="last")
