@@ -45,7 +45,7 @@ def filter_wpforms(wpforms, start_date, end_date):
             pl.col("Zip").alias("zip"),
             pl.col("JP Business/Studio Name").alias("JP Studio Name"),
             pl.col("JP Business/Studio Address").alias("JP Studio Address"),
-            pl.col("Website Url").alias("website"),
+            pl.col("Website URL").alias("website"),
             pl.col("Phone Number").alias("Phone"),
             pl.col("Name as it will appear in your map listing").alias("Name for Map"),
             pl.col("Medium as it will appear in your map listing").alias("Medium"),
